@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>【書名】</title>
+<!--
+  a4-booklet スキルの雛形。17ページの冊子で検証したCSS一式。
+  使い方: このファイルを 作業フォルダの <slug>/<slug>.html へコピーし、
+  【】箇所を差し替え、サンプルページを実際の章で置き換える。
+  img/noise.png は render.ps1 -MakeNoise で生成すること（無いと紙質感が消えるだけで動作はする）。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #262630;      /* 本文 */
+    --deep: #1a2530;     /* 濃紺: 見出し・表紙 */
+    --accent: #2e6e5e;   /* 緑: 一般的な補足 */
+    --accent2: #7a4b8f;  /* 紫: 例示・興味ポイント */
+    --danger: #a63d40;   /* 赤: 警告 */
+    --brass: #a3823c;    /* 真鍮: 装飾・罫線・番号 */
+    --brass-soft: rgba(163, 130, 60, 0.5);
+    --paper: #f7f3e7;
+    --paper2: #efe8d6;
+    --line: #d5cbb2;
+    --display: "Shippori Mincho B1", "Yu Mincho", "YuMincho", serif;
+  }
+  body { font-family: "Yu Gothic Medium", "Yu Gothic", "Meiryo", sans-serif; color: var(--ink); background: #fff; font-size: 10.5pt; line-height: 1.75; }
+  /* 1ページ=1div。mm単位固定なのでページの追加・入替が安全にできる */
+  .page { width: 210mm; height: 296mm; padding: 16mm 16mm 14mm; page-break-after: always; background: var(--paper); background-image: radial-gradient(ellipse 140% 100% at 50% 0%, rgba(255,255,255,0.5), rgba(255,255,255,0) 55%), linear-gradient(160deg, rgba(163,130,60,0.05), rgba(163,130,60,0) 30%, rgba(26,37,48,0.05) 100%); position: relative; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .page:not(.cover):not(.plate)::before { content: ''; position: absolute; inset: 6.5mm; border: 0.35mm solid var(--brass-soft); outline: 0.2mm solid rgba(38, 38, 48, 0.22); outline-offset: 1.2mm; pointer-events: none; }
+  /* 紙質感はPNGタイル一択。SVG feTurbulence を使うと印刷時に全面ラスタ化してPDFが数十MBに膨らむ（実測） */
+  .page::after { content: ''; position: absolute; inset: 0; background-image: url("img/noise.png"); background-size: 96px 96px; opacity: 0.04; pointer-events: none; }
+
+  h1, h2, h3 { font-family: var(--display); }
+  h2 { position: relative; font-size: 16.5pt; font-weight: 700; color: var(--deep); line-height: 1.3; border-bottom: 0.5mm solid var(--deep); padding-bottom: 2mm; margin-bottom: 5.5mm; letter-spacing: 0.06em; }
+  h2::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1.6mm; border-bottom: 0.15mm solid var(--brass); }
+  h2 .num { position: absolute; right: 0; bottom: 1.5mm; font-size: 38pt; font-weight: 800; line-height: 1; color: rgba(163, 130, 60, 0.18); letter-spacing: 0; }
+  h3 { font-size: 11.5pt; font-weight: 700; color: var(--deep); margin: 4mm 0 2mm; letter-spacing: 0.05em; }
+  h3::before { content: '◆'; color: var(--brass); font-size: 7pt; margin-right: 2mm; vertical-align: 1.5pt; }
+  p { margin-bottom: 2.5mm; text-align: justify; }
+  strong { color: var(--deep); }
+
+  .lead { font-size: 10.8pt; color: #494b58; margin-bottom: 4mm; }
+  .cols { display: flex; gap: 6mm; }
+  .cols > div { flex: 1; }
+
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.5pt; border-bottom: 0.3mm solid var(--line); }
+  th { background: var(--deep); color: #efe8d6; padding: 1.6mm 2.5mm; text-align: left; font-weight: normal; letter-spacing: 0.08em; border-bottom: 0.4mm solid var(--brass); }
+  td { padding: 1.5mm 2.5mm; border-bottom: 0.2mm solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(163, 130, 60, 0.055); }
+  td.c, th.c { text-align: center; }
+
+  .box { position: relative; background: var(--paper2); border: 0.25mm solid var(--brass-soft); border-left: 1.1mm solid var(--accent); padding: 2.8mm 4mm; margin: 3mm 0; }
+  .box.warn { border-left-color: var(--danger); }
+  .box.tip  { border-left-color: var(--accent2); }
+  .box .bt { font-family: var(--display); font-weight: bold; font-size: 9.8pt; display: block; margin-bottom: 1mm; letter-spacing: 0.1em; color: var(--accent); }
+  .box.warn .bt { color: var(--danger); }
+  .box.tip .bt { color: var(--accent2); }
+  .box p { margin-bottom: 1mm; }
+
+  .example { background: rgba(255, 255, 255, 0.55); border: 0.25mm solid #c9bda0; padding: 2.8mm 4mm; margin: 3mm 0; font-size: 9.5pt; }
+  .example .et { font-family: var(--display); color: var(--accent2); font-weight: bold; display: block; margin-bottom: 1mm; letter-spacing: 0.08em; }
+
+  .fig { text-align: center; margin: 3mm 0; }
+  .fig svg { max-width: 100%; }
+  .cap { font-family: var(--display); font-size: 8.3pt; color: #8a7f68; text-align: center; margin-top: 1.2mm; letter-spacing: 0.06em; }
+  .cap::before { content: '── '; color: var(--brass-soft); }
+  .cap::after { content: ' ──'; color: var(--brass-soft); }
+
+  .footer { position: absolute; bottom: 8.6mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; align-items: baseline; font-size: 7.5pt; color: #9a9078; letter-spacing: 0.12em; }
+  .footer span:last-child { font-family: var(--display); font-size: 9pt; color: var(--brass); }
+
+  ul, ol { margin: 1mm 0 3mm 6mm; }
+  ul { list-style: none; }
+  ul li { padding-left: 4mm; text-indent: -4mm; margin-bottom: 1mm; }
+  ul li::before { content: '◆'; color: var(--brass); font-size: 6.5pt; margin-right: 1.8mm; vertical-align: 1pt; }
+  .kw { display: inline-block; background: var(--deep); color: #efe8d6; padding: 0 2.2mm; font-size: 8.8pt; letter-spacing: 0.06em; text-indent: 0; }
+
+  /* ---- 表紙 ---- */
+  .cover { background: var(--deep); background-image: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(163, 130, 60, 0.15), rgba(163, 130, 60, 0) 60%), linear-gradient(180deg, #1c2834 0%, #151f29 100%); color: var(--paper); display: flex; flex-direction: column; justify-content: space-between; padding: 22mm 20mm 18mm; }
+  .cover::before { content: ''; position: absolute; inset: 8mm; border: 0.3mm solid rgba(191, 159, 99, 0.5); outline: 0.15mm solid rgba(191, 159, 99, 0.25); outline-offset: 1.2mm; pointer-events: none; }
+  .cover .kicker { font-size: 9pt; letter-spacing: 0.42em; color: #bf9f63; }
+  .cover .kicker::after { content: ''; display: block; width: 34mm; border-bottom: 0.2mm solid rgba(191, 159, 99, 0.55); margin-top: 2.2mm; }
+  .cover .title { font-family: var(--display); font-weight: 800; font-size: 31pt; line-height: 1.42; letter-spacing: 0.06em; margin-top: 7mm; }
+  .cover .subtitle { font-family: var(--display); font-size: 12pt; color: #bf9f63; letter-spacing: 0.34em; margin-top: 4mm; }
+  .cover .edition { display: inline-block; border: 1mm double #bf9f63; color: #bf9f63; padding: 1.2mm 6mm; letter-spacing: 0.28em; font-size: 9.5pt; margin-top: 6mm; font-family: var(--display); }
+  .cover .art { flex: 1; min-height: 0; overflow: hidden; border: 0.25mm solid rgba(191, 159, 99, 0.45); margin: 8mm 0; }
+  .cover .art img, .cover .art svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover .note { font-size: 8.3pt; color: #7d8a94; line-height: 1.9; }
+
+  /* ---- 口絵（挿絵ページ） ---- */
+  .plate { background: #0e141b; background-image: radial-gradient(ellipse 100% 70% at 50% 50%, rgba(163, 130, 60, 0.07), rgba(0, 0, 0, 0) 70%); padding: 13mm; display: flex; flex-direction: column; justify-content: center; gap: 0; }
+  .plate::before { content: ''; position: absolute; inset: 7mm; border: 0.25mm solid rgba(191, 159, 99, 0.35); pointer-events: none; }
+  .plate .plabel { font-family: var(--display); text-align: center; color: #bf9f63; font-size: 8.5pt; letter-spacing: 0.5em; padding-bottom: 3.5mm; }
+  .plate .ph { flex: 1; overflow: hidden; border: 0.25mm solid rgba(191, 159, 99, 0.4); min-height: 0; }
+  .plate .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .plate .pcap { color: #b7a97f; font-family: var(--display); font-size: 9.5pt; text-align: center; letter-spacing: 0.16em; padding: 2.5mm 0 5mm; }
+  .plate .pcap:last-child { padding-bottom: 0; }
+
+  /* 目次 */
+  .toc { list-style: none; margin: 0; }
+  .toc li { display: flex; align-items: baseline; margin-bottom: 2.4mm; font-size: 10.8pt; }
+  .toc .t-num { color: var(--brass); font-family: var(--display); width: 10mm; font-size: 11.5pt; }
+  .toc .t-dots { flex: 1; border-bottom: 0.25mm dotted #b3a684; margin: 0 2mm; }
+  .toc .t-pg { font-family: var(--display); color: #8a7f68; }
+
+  /* 詰めページ用（はみ出したページだけに付ける。全ページ一律には使わない） */
+  .tight .lead { margin-bottom: 2.5mm; }
+  .tight h3 { margin: 2.6mm 0 1.4mm; }
+  .tight .box, .tight .example { margin: 2mm 0; padding: 2.2mm 3.5mm; }
+  .tight table { margin: 1.5mm 0 2.5mm; }
+  .tight p { margin-bottom: 1.8mm; }
+</style>
+</head>
+<body>
+
+<!-- ============ P1 表紙 ============ -->
+<div class="page cover">
+  <div>
+    <div class="kicker">UNOFFICIAL QUICK GUIDE</div>
+    <div class="title">【書名】</div>
+    <div class="subtitle">【副題】</div>
+    <div class="edition">【第 ◯ 版 対応】</div>
+  </div>
+  <div class="art">
+    <!-- 挿絵が来るまでは手描きSVG、来たら <img src="img/01-cover.jpg" alt=""> に差し替え -->
+  </div>
+  <div class="note">
+    本作は、【原作シリーズ名】の二次創作物です。<br>
+    【原作の著作権表記（例: Call of Cthulhu is copyright &copy;1981, 2015, 2019 by Chaosium Inc.）】<br>
+    本書はファンによる非公式のルール要約で、文章はすべて独自に書き起こしたものです。ルールブックの文章・データ表の転載は含みません。<br>
+    実際に遊ぶには公式ルールブック【正式書名（出版社）】が必要です。
+  </div>
+</div>
+
+<!-- ============ P2 序＋目次（見本） ============ -->
+<div class="page">
+  <h2><span class="num">序</span>【章タイトル】</h2>
+  <p class="lead">【リード文。<strong>強調</strong>はstrongで】</p>
+  <div class="box tip">
+    <span class="bt">【小見出し】</span>
+    <p>【box=補足(緑) / box tip=豆知識(紫) / box warn=警告(赤)】</p>
+  </div>
+  <h3>目次</h3>
+  <ol class="toc">
+    <li><span class="t-num">1</span>【章名】<span class="t-dots"></span><span class="t-pg">P.3</span></li>
+  </ol>
+  <div class="footer"><span>【書名（非公式）】</span><span>2</span></div>
+</div>
+
+<!-- ============ 口絵の見本（挿絵が用意できてから挿入する） ============
+<div class="page plate">
+  <div class="plabel">✦ PLATE I ✦</div>
+  <div class="ph"><img src="img/02-xxx.jpg" alt=""></div>
+  <div class="pcap">【一言キャプション】</div>
+</div>
+-->
+
+<!-- ============ 最終ページ末尾に置く免責box（雛形） ============
+  <div class="box warn" style="margin-top:5mm">
+    <span class="bt">この本の位置づけ</span>
+    <p>本書はファンによる<strong>非公式の要約メモ</strong>で、個人のセッション準備用です。<strong>本書だけでは遊べません</strong>——正式なデータ・正文・例外はすべて公式ルールブック【正式書名（出版社）】を参照してください。細部の裁定は卓のKPに従うこと。<br>本作は、【原作シリーズ名】の二次創作物です。【著作権表記】</p>
+  </div>
+-->
+
+</body>
+</html>

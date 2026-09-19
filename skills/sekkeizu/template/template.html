@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>設計図: __SEKKEIZU_TITLE__</title>
+<style>
+/* 見た目の正本はこの雛形。案件の HTML は build_sekkeizu.py の書き出しで、手で直さない */
+:root{
+  --canvas:#eef0f4; --dot:#d6dae2; --card:#ffffff; --ink:#1c2230; --sub:#5d6677; --mute:#8b93a3;
+  --line:#dde1e8; --edge:#9aa3b5; --pill:#232a3a; --pill-ink:#f4f6fa; --hi:#2f5fd0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--canvas);color:var(--ink);
+  font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP","Meiryo",system-ui,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;cursor:grab;
+  background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:22px 22px}
+#stage.panning{cursor:grabbing}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+#edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.6}
+.edge.dash{stroke-dasharray:5 5}
+.edge.hot{stroke:var(--hi);stroke-width:2.6}
+.elabel{position:absolute;transform:translate(-50%,-50%);font-size:11.5px;color:var(--sub);
+  background:var(--canvas);padding:1px 6px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.elabel.hot{color:var(--hi);font-weight:700}
+.dim{opacity:.22}
+.node{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 1px 2px rgba(20,30,50,.06);user-select:none}
+.node.sel{outline:2.5px solid var(--hi);outline-offset:2px}
+.nhead{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:move}
+.ntitle{font-weight:700;font-size:14px}
+.dots{display:flex;gap:3px;margin-left:auto}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.badge{font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 6px;margin-left:auto}
+.badge.new{background:#e7efff;color:#2f5fd0}
+.badge.old{background:#eef0f3;color:#6a7282}
+.badge.ext{background:#fff2e0;color:#9a6412}
+.screen{width:250px}
+.who{font-size:10.5px;color:var(--sub);padding:6px 12px 0}
+.mock{margin:8px 12px 12px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fafbfc}
+.mbar{height:18px;background:#2a3142;display:flex;align-items:center;gap:4px;padding:0 6px}
+.mbar i{width:6px;height:6px;border-radius:50%;background:#5b6477;display:block}
+.mbar span{font-size:9.5px;color:#c9d0dc;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow{display:flex;align-items:center;gap:6px;padding:5px 8px;border-top:1px solid #eef0f3;font-size:10.5px;color:#3a4252}
+.mrow:first-of-type{border-top:0}
+.mrow b{font-weight:700}
+.mrow .k{color:var(--mute);min-width:40px}
+.chip{font-size:9.5px;border-radius:3px;padding:0 4px;background:#eef0f3;color:#555e6e;white-space:nowrap}
+.chip.g{background:#e6f4e8;color:#2f6f38}.chip.r{background:#fbe9ec;color:#a13a52}.chip.b{background:#e7efff;color:#2f5fd0}
+.concept{width:200px}
+.concept .cbody{padding:8px 12px 12px;font-size:12px;color:var(--sub);line-height:1.6}
+.table{width:300px}
+.field{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:baseline;padding:5px 12px;border-top:1px solid #f1f2f5;font-size:12px}
+.field:first-child{border-top:0}
+.fj{font-weight:600}.fe{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;color:var(--mute);margin-left:6px;font-weight:400}
+.ft{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;color:var(--mute)}
+.fk{font-size:10px;font-weight:700;color:var(--mute);min-width:18px;text-align:right}
+.fk.pk{color:#2f5fd0}.fk.fkk{color:#9a6412}
+.fnote{grid-column:1/-1;font-size:10.5px;color:var(--mute);margin-top:-2px}
+.tfoot{padding:6px 12px 9px;font-size:10.5px;color:var(--mute);border-top:1px solid var(--line)}
+.hud{position:fixed;z-index:5}
+#title{left:24px;top:20px;background:var(--pill);color:var(--pill-ink);border-radius:10px;padding:12px 18px;
+  display:flex;align-items:baseline;gap:12px;max-width:calc(100vw - 48px)}
+#title b{font-size:18px}#title span{font-size:13px;color:#b9c1d0}
+#legend{right:20px;top:20px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;width:250px;max-height:calc(100vh - 140px);overflow:auto}
+#legend h3{margin:0 0 8px;font-size:12.5px;color:var(--sub);font-weight:600}
+.lg{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;padding:6px 6px;border-radius:6px;
+  font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.lg:hover{background:#f2f4f7}.lg.on{background:#e9efff}
+.lg .dot{width:11px;height:11px}
+.lg small{margin-left:auto;font-size:10.5px;color:var(--mute)}
+#info{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:12px;line-height:1.65;color:var(--sub);min-height:40px}
+#info b{color:var(--ink)}
+#views{left:50%;bottom:20px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:6px;display:flex;gap:4px;box-shadow:0 4px 16px rgba(20,30,50,.08)}
+.vb{border:0;background:none;border-radius:8px;padding:8px 18px;text-align:left;cursor:pointer;font:inherit;color:var(--sub)}
+.vb b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+.vb small{font-size:11.5px}
+.vb.on{background:var(--pill)}.vb.on b{color:#fff}.vb.on small{color:#c4cad6}
+.vb.tool b{font-size:14px}
+#help{left:24px;bottom:24px;font-size:12px;color:var(--sub);max-width:250px;line-height:1.7;overflow-wrap:anywhere}
+button:focus-visible,.node:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.lane{position:absolute;font-size:13px;font-weight:700;color:var(--sub);letter-spacing:.05em;white-space:nowrap}
+.lane small{display:block;font-weight:400;color:var(--mute);letter-spacing:0}
+.laneband{position:absolute;border-radius:14px;background:rgba(255,255,255,.35);border:1px dashed #cfd4dd}
+@media (max-width:900px){#legend{width:200px}#help{display:none}.vb{padding:6px 10px}.vb small{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"><svg id="edges"></svg></div></div>
+
+<div id="title" class="hud"><b>__SEKKEIZU_TITLE__ 設計図</b><span id="count"></span></div>
+
+<div id="legend" class="hud">
+  <h3>出てくる物（押すと追いかける）</h3>
+  <div id="lglist"></div>
+  <div id="info">画面や四角を押すと、ここに説明が出る。</div>
+</div>
+
+<div id="views" class="hud" role="tablist">
+  <button class="vb" data-view="screens"><b>画面</b><small>モックと業務フロー</small></button>
+  <button class="vb" data-view="concept"><b>概念図</b><small>物と関係だけ</small></button>
+  <button class="vb" data-view="er"><b>ER図</b><small>列まで含める</small></button>
+  <button class="vb tool" id="relayout"><b>並べ直す</b><small>動かした位置を戻す</small></button>
+</div>
+
+<div id="help" class="hud"></div>
+
+<script>
+const DATA = __SEKKEIZU_DATA__;
+
+/* ---------- データを読む ---------- */
+const PALETTE = ['#2f8f86','#b07a22','#6f55c9','#c24e67','#3f8a45','#2f6fb0','#9a5a2e','#5f6b7a'];
+const KIND = {new:'新規', old:'既存', ext:'外から'};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rich = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const OBJ = {};
+Object.entries(DATA.objects).forEach(([k,o],i)=>{
+  OBJ[k] = {name:o.name, color:o.color || PALETTE[i % PALETTE.length], kind:o.kind, tag:KIND[o.kind], desc:o.desc || ''};
+});
+const LANE_H = 320, COL_W = 350;  // 列の間は、隣の画面との間に線の札が収まる幅
+const LANES = DATA.lanes.map((l,i)=>({...l, y:70 + i*LANE_H}));
+const COL = c => 150 + c*COL_W;
+const MAXCOL = Math.max(0, ...DATA.screens.map(s=>s.col));
+const SCREENS = DATA.screens, CONCEPTS = DATA.concepts, TABLES = DATA.tables;
+const EDGES = {screens:DATA.screen_edges, concept:DATA.concept_edges, er:DATA.er_edges};
+document.getElementById('help').innerHTML = '背景をドラッグで移動、ホイールで拡大縮小。四角は上の帯をつかんで動かせる。右の「出てくる物」を押すと、どの画面や表に出てくるかが3つの図をまたいで光る。<br>元の文書: ' + esc(DATA.doc);
+
+/* ---------- 描画と操作 ---------- */
+const world = document.getElementById('world'), svg = document.getElementById('edges'), stage = document.getElementById('stage');
+let view = 'screens', scale = 1, tx = 0, ty = 0, selected = new Set(), pos = {}, currentEdges = [];
+
+function dotsHtml(objs){ return '<span class="dots">' + objs.map(o=>`<span class="dot" style="background:${OBJ[o].color}" title="${esc(OBJ[o].name)}"></span>`).join('') + '</span>'; }
+function mark(m){
+  if(!m) return '';
+  if(typeof m === 'object' && m.value !== undefined) return `<b>${esc(m.value)}</b>`;
+  if(typeof m === 'object') return `<span class="chip ${esc(m.tone || '')}">${esc(m.chip)}</span>`;
+  return `<span class="chip">${esc(m)}</span>`;
+}
+function defaults(){
+  const p = {};
+  SCREENS.forEach(s=>{ const l = LANES.find(l=>l.id===s.lane); p['screens:'+s.id] = {x:COL(s.col), y:l.y+40}; });
+  CONCEPTS.forEach((c,i)=>p['concept:'+c.id] = {x: c.x != null ? c.x : 80 + (i%3)*380, y: c.y != null ? c.y : 160 + Math.floor(i/3)*310});
+  TABLES.forEach((t,i)=>p['er:'+t.id] = {x: t.x != null ? t.x : 60 + (i%3)*420, y: t.y != null ? t.y : 100 + Math.floor(i/3)*380});
+  return p;
+}
+pos = defaults();
+function nodeObjs(kind, id){ return kind === 'screens' ? SCREENS.find(s=>s.id===id).objs : [id]; }
+
+function render(){
+  world.querySelectorAll('.node,.elabel,.lane,.laneband').forEach(n=>n.remove());
+  if(view === 'screens'){
+    LANES.forEach(l=>{
+      const band = document.createElement('div'); band.className = 'laneband';
+      Object.assign(band.style, {left:'20px', top:l.y+'px', width:(COL(MAXCOL)+290)+'px', height:(LANE_H-20)+'px'}); world.appendChild(band);
+      const t = document.createElement('div'); t.className = 'lane'; t.innerHTML = `${esc(l.name)}<small>${esc(l.note || '')}</small>`;
+      Object.assign(t.style, {left:'36px', top:(l.y+16)+'px'}); world.appendChild(t);
+    });
+    SCREENS.forEach(s=>{
+      const rows = (s.rows || []).map(r=>`<div class="mrow"><span class="k">${esc(r[0])}</span><span style="flex:1">${esc(r[1])}</span>${mark(r[2])}</div>`).join('');
+      mk('screens', s.id, 'screen', `<div class="nhead"><span class="ntitle">${esc(s.title)}</span>${dotsHtml(s.objs)}</div>
+        <div class="who">${esc(s.who || '')}</div>
+        <div class="mock"><div class="mbar"><i></i><i></i><i></i><span>${esc(s.where || '')}</span></div>${rows}</div>`, s.info || '');
+    });
+  } else if(view === 'concept'){
+    CONCEPTS.forEach(c=>{
+      const o = OBJ[c.id];
+      mk('concept', c.id, 'concept', `<div class="nhead"><span class="dot" style="background:${o.color}"></span><span class="ntitle">${esc(o.name)}</span><span class="badge ${o.kind}">${o.tag}</span></div><div class="cbody">${rich(c.text)}</div>`, o.desc);
+    });
+  } else {
+    TABLES.forEach(t=>{
+      const o = OBJ[t.id];
+      const rows = t.fields.map(f=>`<div class="field"><span class="fj">${esc(f[0])}<span class="fe">${esc(f[1])}</span></span><span class="ft">${esc(f[2])}</span><span class="fk ${f[3]==='PK'?'pk':f[3]==='FK'?'fkk':''}">${esc(f[3])}</span>${f[4]?`<span class="fnote">${rich(f[4])}</span>`:''}</div>`).join('');
+      mk('er', t.id, 'table', `<div class="nhead"><span class="dot" style="background:${o.color}"></span><span class="ntitle">${esc(o.name)}</span><span class="badge ${o.kind}">${o.tag}</span></div><div>${rows}</div><div class="tfoot">${esc(t.where || '')}</div>`, o.desc);
+    });
+  }
+  document.getElementById('count').textContent = view === 'screens' ? `${SCREENS.length} 画面 / 業務フロー` : view === 'concept' ? `${CONCEPTS.length} 個の物 / 関係` : `${TABLES.length} 表 / 列つき`;
+  currentEdges = EDGES[view];
+  drawEdges();
+}
+
+function mk(kind, id, cls, html, info){
+  const el = document.createElement('div');
+  el.className = 'node ' + cls; el.dataset.kind = kind; el.dataset.id = id; el.innerHTML = html;
+  const p = pos[kind+':'+id]; el.style.left = p.x+'px'; el.style.top = p.y+'px';
+  el.tabIndex = 0; el.setAttribute('role', 'button');
+  const pick = ()=>{ showInfo(el, info); selectObjs(nodeObjs(kind, id)); };
+  el.addEventListener('click', ()=>{ if(!el._moved) pick(); });
+  el.addEventListener('keydown', e=>{ if(e.key === 'Enter') pick(); });
+  el.querySelector('.nhead').addEventListener('pointerdown', e=>startDrag(e, el, kind, id));
+  world.appendChild(el);
+}
+function rect(id){
+  const el = world.querySelector(`.node[data-id="${CSS.escape(id)}"]`);
+  return el ? {x:el.offsetLeft, y:el.offsetTop, w:el.offsetWidth, h:el.offsetHeight} : null;
+}
+function drawEdges(){
+  svg.innerHTML = ''; world.querySelectorAll('.elabel').forEach(n=>n.remove());
+  svg.setAttribute('width', 6000); svg.setAttribute('height', 4000);
+  currentEdges.forEach(([a,b,label,style])=>{
+    const A = rect(a), B = rect(b); if(!A || !B) return;
+    const acx = A.x+A.w/2, acy = A.y+A.h/2, bcx = B.x+B.w/2, bcy = B.y+B.h/2;
+    let x1,y1,x2,y2,c1x,c1y,c2x,c2y;
+    if(Math.abs(bcx-acx) > Math.abs(bcy-acy)*0.6){
+      const dir = bcx > acx ? 1 : -1;
+      x1 = dir>0 ? A.x+A.w : A.x; y1 = acy; x2 = dir>0 ? B.x : B.x+B.w; y2 = bcy;
+      const k = Math.max(50, Math.abs(x2-x1)/2); c1x = x1+dir*k; c1y = y1; c2x = x2-dir*k; c2y = y2;
+    } else {
+      const dir = bcy > acy ? 1 : -1;
+      x1 = acx; y1 = dir>0 ? A.y+A.h : A.y; x2 = bcx; y2 = dir>0 ? B.y : B.y+B.h;
+      const k = Math.max(40, Math.abs(y2-y1)/2); c1x = x1; c1y = y1+dir*k; c2x = x2; c2y = y2-dir*k;
+    }
+    const add = (d, cls)=>{ const p = document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d', d); p.setAttribute('class', cls); p.dataset.a = a; p.dataset.b = b; svg.appendChild(p); };
+    add(`M${x1},${y1} C${c1x},${c1y} ${c2x},${c2y} ${x2},${y2}`, 'edge' + (style === 'dash' ? ' dash' : ''));
+    if(view === 'screens'){  // 業務フローだけ矢印で向きを見せる
+      const ang = Math.atan2(y2-c2y, x2-c2x), s = 7;
+      add(`M${x2},${y2} L${x2-s*Math.cos(ang-0.45)},${y2-s*Math.sin(ang-0.45)} M${x2},${y2} L${x2-s*Math.cos(ang+0.45)},${y2-s*Math.sin(ang+0.45)}`, 'edge');
+    }
+    const lab = document.createElement('div'); lab.className = 'elabel'; lab.textContent = label;
+    lab.style.left = ((x1+x2)/2 + (c1x+c2x-x1-x2)*0.375)+'px'; lab.style.top = ((y1+y2)/2 + (c1y+c2y-y1-y2)*0.375)+'px';
+    lab.dataset.a = a; lab.dataset.b = b; world.appendChild(lab);
+  });
+  applyTrace();
+}
+
+/* 追いかけ: 選んだ物が出てくる四角を光らせ、線1本でつながる隣は残し、残りを薄くする */
+function selectObjs(objs){ selected = new Set(objs); paintLegend(); applyTrace(); }
+function applyTrace(){
+  const nodes = [...world.querySelectorAll('.node')];
+  const lines = [...svg.querySelectorAll('path'), ...world.querySelectorAll('.elabel')];
+  if(!selected.size){ nodes.forEach(n=>n.classList.remove('dim','sel')); lines.forEach(l=>l.classList.remove('dim','hot')); return; }
+  const hit = new Set(), near = new Set();
+  nodes.forEach(n=>{ if(nodeObjs(n.dataset.kind, n.dataset.id).some(o=>selected.has(o))) hit.add(n.dataset.id); });
+  currentEdges.forEach(([a,b])=>{ if(hit.has(a)) near.add(b); if(hit.has(b)) near.add(a); });
+  nodes.forEach(n=>{ const on = hit.has(n.dataset.id); n.classList.toggle('sel', on); n.classList.toggle('dim', !on && !near.has(n.dataset.id)); });
+  lines.forEach(l=>{ const on = hit.has(l.dataset.a) || hit.has(l.dataset.b); l.classList.toggle('hot', on); l.classList.toggle('dim', !on); });
+}
+function paintLegend(){ document.querySelectorAll('.lg').forEach(b=>b.classList.toggle('on', selected.has(b.dataset.obj))); }
+function showInfo(el, info){ document.getElementById('info').innerHTML = `<b>${esc(el.querySelector('.ntitle').textContent)}</b><br>${rich(info)}`; }
+const lg = document.getElementById('lglist');
+Object.entries(OBJ).forEach(([k,o])=>{
+  const b = document.createElement('button'); b.className = 'lg'; b.dataset.obj = k;
+  b.innerHTML = `<span class="dot" style="background:${o.color}"></span>${esc(o.name)}<small>${o.tag}</small>`;
+  b.addEventListener('click', ()=>{
+    if(selected.has(k)) selected.delete(k); else selected.add(k);
+    document.getElementById('info').innerHTML = `<b>${esc(o.name)}</b>（${o.tag}）<br>${rich(o.desc)}`;
+    paintLegend(); applyTrace();
+  });
+  lg.appendChild(b);
+});
+
+function startDrag(e, el, kind, id){
+  e.stopPropagation(); el._moved = false;
+  const sx = e.clientX, sy = e.clientY, p = pos[kind+':'+id], ox = p.x, oy = p.y;
+  el.setPointerCapture(e.pointerId);
+  const mv = ev=>{ const dx = (ev.clientX-sx)/scale, dy = (ev.clientY-sy)/scale; if(Math.abs(dx)+Math.abs(dy) > 3) el._moved = true;
+    p.x = ox+dx; p.y = oy+dy; el.style.left = p.x+'px'; el.style.top = p.y+'px'; drawEdges(); };
+  const up = ()=>{ el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); setTimeout(()=>el._moved = false, 0); };
+  el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+}
+function apply(){ world.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`; }
+stage.addEventListener('pointerdown', e=>{
+  if(e.target.closest('.node')) return;
+  stage.classList.add('panning'); const sx = e.clientX, sy = e.clientY, ox = tx, oy = ty;
+  const mv = ev=>{ tx = ox+ev.clientX-sx; ty = oy+ev.clientY-sy; apply(); };
+  const up = ()=>{ stage.classList.remove('panning'); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
+  window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+});
+stage.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const ns = Math.min(2.2, Math.max(0.2, scale*Math.exp(-e.deltaY*0.0015)));
+  tx = e.clientX - (e.clientX-tx)*(ns/scale); ty = e.clientY - (e.clientY-ty)*(ns/scale); scale = ns; apply();
+}, {passive:false});
+function fit(){
+  const ns = [...world.querySelectorAll('.node')]; if(!ns.length) return;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  ns.forEach(n=>{ x0 = Math.min(x0, n.offsetLeft); y0 = Math.min(y0, n.offsetTop); x1 = Math.max(x1, n.offsetLeft+n.offsetWidth); y1 = Math.max(y1, n.offsetTop+n.offsetHeight); });
+  if(view === 'screens'){ x0 = Math.min(x0, 20); y0 = Math.min(y0, 70); y1 = Math.max(y1, 70 + LANES.length*LANE_H - 20); }
+  // 右上の凡例に重ならんよう、凡例の幅だけ右を空けて収める
+  const W = innerWidth, H = innerHeight, padTop = 90, padBottom = 110;
+  const left = 24, right = W >= 600 ? W - document.getElementById('legend').offsetWidth - 40 : W - 24;
+  scale = Math.max(0.2, Math.min((right-left)/(x1-x0), (H-padTop-padBottom)/(y1-y0), 1.1));
+  tx = left + Math.max(0, (right-left-(x1-x0)*scale)/2) - x0*scale;
+  ty = padTop - y0*scale + Math.max(0, (H-padTop-padBottom-(y1-y0)*scale)/2); apply();
+}
+function paintViews(){ document.querySelectorAll('.vb[data-view]').forEach(b=>{ b.classList.toggle('on', b.dataset.view === view); b.setAttribute('aria-selected', b.dataset.view === view); }); }
+document.querySelectorAll('.vb[data-view]').forEach(b=>b.addEventListener('click', ()=>{ view = b.dataset.view; paintViews(); render(); fit(); }));
+document.getElementById('relayout').addEventListener('click', ()=>{ const d = defaults(); Object.keys(d).forEach(k=>{ if(k.startsWith(view+':')) pos[k] = d[k]; }); render(); fit(); });
+addEventListener('resize', fit);
+// URL の # で開き方を決められる。例: #view=er&sel=article（撮影の script もこれを使う）
+(function(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  if(['screens','concept','er'].includes(h.get('view'))) view = h.get('view');
+  (h.get('sel') || '').split(',').filter(k=>OBJ[k]).forEach(k=>selected.add(k));
+})();
+paintViews(); paintLegend(); render(); fit();
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

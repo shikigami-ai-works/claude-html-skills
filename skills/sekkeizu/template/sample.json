@@ -1,0 +1,85 @@
+{
+  "_comment": "設計図の入力の手本。題材は架空の小さな図書館の貸出と予約。例の行の名前と数字は、読み方を見せるための作り物。",
+  "title": "図書館の貸出と予約",
+  "doc": "docs/設計図_貸出と予約.md",
+  "out": "設計図_貸出と予約.html",
+  "objects": {
+    "book":    {"name": "蔵書", "kind": "old", "color": "#2f8f86", "desc": "図書館にある本の1冊が1行。今の蔵書の台帳 `蔵書.csv` をそのまま使う。"},
+    "member":  {"name": "利用者", "kind": "old", "color": "#b07a22", "desc": "利用者カードの番号で引ける。今の名簿をそのまま使う。"},
+    "loan":    {"name": "貸出", "kind": "new", "color": "#6f55c9", "desc": "1回の貸出が1行。返したら返却日を埋める。上書きせず、次の貸出は新しい行にする（D-01）。"},
+    "reserve": {"name": "予約", "kind": "new", "color": "#c24e67", "desc": "貸出中の本を待つ人の列。順番は受け付けた時刻で決める（D-02）。"},
+    "biblio":  {"name": "書誌データ", "kind": "ext", "color": "#3f8a45", "desc": "外の書誌サービスから取る題名と著者。取り込みの頻度は未確認（U-01）。"}
+  },
+  "lanes": [
+    {"id": "system", "name": "仕組み", "note": "決まった時刻に勝手に動く"},
+    {"id": "staff", "name": "司書", "note": "カウンターで操作する"},
+    {"id": "user", "name": "利用者", "note": "借りる、返す、予約する"}
+  ],
+  "screens": [
+    {"id": "s1", "lane": "user", "col": 0, "title": "蔵書の検索", "where": "図書館のサイト", "objs": ["book", "biblio"],
+     "who": "利用者が題名や著者で探す",
+     "rows": [["", "はじめての星空観察", {"chip": "貸出可", "tone": "g"}], ["", "町の歴史を歩く", {"chip": "貸出中", "tone": "r"}]],
+     "info": "題名と著者は書誌データから、貸出の可否は貸出の表から出す。"},
+    {"id": "s2", "lane": "staff", "col": 1, "title": "貸出の受付", "where": "カウンターの画面", "objs": ["book", "member", "loan"],
+     "who": "司書が利用者カードと本を読み取る",
+     "rows": [["M-0123", "はじめての星空観察", {"chip": "貸出", "tone": "b"}], ["", "返却期限", {"value": "2週間後"}]],
+     "info": "1回の貸出で貸出の表に1行足す。借りられる冊数の上限は利用者ごとに決まる（D-03）。"},
+    {"id": "s3", "lane": "user", "col": 2, "title": "予約", "where": "図書館のサイト", "objs": ["book", "member", "reserve"],
+     "who": "貸出中の本を利用者が予約する",
+     "rows": [["1", "町の歴史を歩く", {"chip": "待ち 2人"}]],
+     "info": "予約の表に1行足す。自分が何番目かを表示する。"},
+    {"id": "s4", "lane": "staff", "col": 2, "title": "返却の受付", "where": "カウンターの画面", "objs": ["loan", "reserve"],
+     "who": "司書が本を読み取る",
+     "rows": [["", "町の歴史を歩く", {"chip": "返却", "tone": "g"}], ["", "予約あり", {"chip": "取り置き", "tone": "b"}]],
+     "info": "返却日を埋める。予約があれば取り置きの棚へ回す。"},
+    {"id": "s5", "lane": "system", "col": 3, "title": "取り置きの連絡", "where": "毎朝 8:00 のメール", "objs": ["reserve", "member"],
+     "who": "仕組みが予約の先頭の人へ送る",
+     "rows": [["M-0456", "町の歴史を歩く", {"chip": "連絡済み"}]],
+     "info": "取り置きの期限は7日。過ぎたら次の人へ回す（D-02）。"},
+    {"id": "s6", "lane": "system", "col": 4, "title": "延滞の一覧", "where": "毎朝 8:00 の一覧", "objs": ["loan", "member"],
+     "who": "返却期限を過ぎた貸出を並べる",
+     "rows": [["M-0789", "3日超過", {"value": "1冊"}]],
+     "info": "返却日が空で、期限を過ぎた行を拾う。例の行は作り物。"}
+  ],
+  "screen_edges": [
+    ["s1", "s2", "本を持って窓口へ"],
+    ["s1", "s3", "貸出中なら予約"],
+    ["s2", "s4", "期限までに返す"],
+    ["s4", "s5", "予約があれば連絡"],
+    ["s3", "s5", "順番が来たら連絡"],
+    ["s2", "s6", "期限を過ぎたら"]
+  ],
+  "concepts": [
+    {"id": "biblio", "x": 80, "y": 160, "text": "外から取る題名と著者。"},
+    {"id": "book", "x": 80, "y": 470, "text": "図書館にある1冊ずつ。"},
+    {"id": "member", "x": 460, "y": 470, "text": "カードの番号で引く。"},
+    {"id": "loan", "x": 460, "y": 160, "text": "借りてから返すまで。"},
+    {"id": "reserve", "x": 840, "y": 310, "text": "貸出中の本を待つ列。"}
+  ],
+  "concept_edges": [
+    ["biblio", "book", "題名を付ける", "dash"],
+    ["book", "loan", "貸し出される（何度も）"],
+    ["member", "loan", "借りる"],
+    ["member", "reserve", "予約する"],
+    ["book", "reserve", "待たれる"]
+  ],
+  "tables": [
+    {"id": "biblio", "x": 60, "y": 100, "where": "外の書誌サービス", "fields": [
+      ["書誌番号", "isbn", "string", "PK"], ["題名", "title", "string", ""], ["著者", "author", "string", ""], ["取り込みの頻度", "?", "?", "", "未確認（U-01）"]]},
+    {"id": "book", "x": 60, "y": 470, "where": "蔵書.csv", "fields": [
+      ["蔵書番号", "book_id", "string", "PK"], ["書誌番号", "isbn", "string", "FK"], ["置き場所", "shelf", "string", ""]]},
+    {"id": "member", "x": 480, "y": 470, "where": "名簿.csv", "fields": [
+      ["カード番号", "member_id", "string", "PK"], ["氏名", "name", "string", ""], ["冊数の上限", "max_loans", "int", "", "D-03"]]},
+    {"id": "loan", "x": 480, "y": 100, "where": "貸出.csv", "fields": [
+      ["貸出番号", "loan_id", "string", "PK"], ["蔵書", "book_id", "string", "FK"], ["利用者", "member_id", "string", "FK"], ["貸出日", "lent_on", "date", ""], ["返却期限", "due_on", "date", ""], ["返却日", "returned_on", "date", "", "空なら貸出中"]]},
+    {"id": "reserve", "x": 900, "y": 250, "where": "予約.csv", "fields": [
+      ["予約番号", "reserve_id", "string", "PK"], ["蔵書", "book_id", "string", "FK"], ["利用者", "member_id", "string", "FK"], ["受付時刻", "requested_at", "datetime", "", "順番を決める（D-02）"], ["状態", "status", "string", "", "待ち／取り置き／受取済み／取消"]]}
+  ],
+  "er_edges": [
+    ["biblio", "book", "1 — * 題名", "dash"],
+    ["book", "loan", "1 — * 貸す"],
+    ["member", "loan", "1 — * 借りる"],
+    ["book", "reserve", "1 — * 待たれる"],
+    ["member", "reserve", "1 — * 予約する"]
+  ]
+}
