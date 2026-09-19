@@ -20,7 +20,7 @@ explain-visually は明示して呼んだときだけ動く。他の4本は、�
 Claude Code で、このリポジトリをマーケットプレイス（プラグインの配布元）として登録してから入れる。
 
 ```bash
-claude plugin marketplace add OWNER/html-skills
+claude plugin marketplace add shikigami-ai-works/html-skills
 claude plugin install html-skills@html-skills
 ```
 
