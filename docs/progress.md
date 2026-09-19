@@ -22,8 +22,9 @@
 ## 公開の手順（しきがやる）
 
 1. GitHub で空の公開リポジトリ `html-skills` を作る（README や LICENSE は付けない）
-2. README の `OWNER` を GitHub のユーザー名に置き換える
-3. `git remote add origin https://github.com/<ユーザー名>/html-skills.git` と `git push -u origin main`
+2. `git remote add origin https://github.com/shikigami-ai-works/html-skills.git` と `git push -u origin main`
+
+commit の作者は、この倉庫だけ `Shikigami_AI_ <285404213+shikigami-ai-works@users.noreply.github.com>`（GitHub の公開用アドレス）にしてある（2026-09-19、しきの指示）。全体の設定の Gmail は変えていない。
 
 ## 残っている手当て
 
