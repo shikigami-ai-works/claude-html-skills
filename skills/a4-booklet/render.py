@@ -70,10 +70,9 @@ def find_chrome() -> str:
 
 def need_pillow():
     try:
-        from PIL import Image  # noqa: F401
+        from PIL import Image
     except ImportError:
         sys.exit("Pillow が要る。pip install pillow で入れてから回す")
-    from PIL import Image
     Image.MAX_IMAGE_PIXELS = None  # 冊子の縦長の1枚は既定の上限を超えることがある
     return Image
 
