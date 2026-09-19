@@ -12,14 +12,20 @@
 - 試走: rosenzu（自己試験、書き出し、4枚撮影）、sekkeizu（自己試験、書き出し、数の突き合わせ、4枚撮影）、explain-visually（試験ページで Mermaid 2枚の描画、Chrome が無いときに止まること）、a4-booklet（タイル、撮影と分割、PDF 2ページ、ZIP）。すべて exit 0
 - `claude plugin validate` は通過（author が無い警告1件）。`claude --plugin-dir` で5本が Skill として読み込まれることを確かめた
 
-## 公開の前に決めること（しき）
+## 公開の準備（2026-09-19）
 
-- 置き場（GitHub の公開リポジトリなど）と公開そのもの
-- author の表記（実名を出さない方針。ハンドル名か屋号か）
-- explain-visually 以外の許諾（MIT などにするか）
+- しきの決定: 作者の表記は Shikigami_AI_、許諾は MIT、README は日本語だけ、冊子の撮影は OS を問わない形に直す
+- 冊子の `render.ps1` を `render.py` に置き換えた。雛形で4機能（タイル、撮影と分割、PDF 2ページ、ZIP）が exit 0。Pillow が無いときと `--page-count` が無いときに止まることも確かめた
+- `LICENSE`（MIT）、`.gitattributes`（改行を LF に固定）、`.claude-plugin/marketplace.json` を足した。`claude plugin validate` は plugin.json と marketplace.json とも警告なしで通過
+- 隔離した設定フォルダ（`CLAUDE_CONFIG_DIR`）で `marketplace add` から `install` まで通し、enabled になった。しきの本来の設定には何も残っていない
+
+## 公開の手順（しきがやる）
+
+1. GitHub で空の公開リポジトリ `html-skills` を作る（README や LICENSE は付けない）
+2. README の `OWNER` を GitHub のユーザー名に置き換える
+3. `git remote add origin https://github.com/<ユーザー名>/html-skills.git` と `git push -u origin main`
 
 ## 残っている手当て
 
-- a4-booklet の `render.ps1` は Windows 専用。macOS と Linux でも撮影と分割をしたいなら、Python へ移す
 - macOS と Linux での試走はしていない（Chrome を探す処理は書いたが、実機では未確認）
 - bg-pdf は script を持たず、手順と断片のコードだけ。雛形の HTML は入れていない

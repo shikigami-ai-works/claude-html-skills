@@ -1,0 +1,14 @@
+{
+  "name": "html-skills",
+  "description": "HTML で読むページや印刷物を作る Claude Code の Skill 集",
+  "owner": {
+    "name": "Shikigami_AI_"
+  },
+  "plugins": [
+    {
+      "name": "html-skills",
+      "source": "./",
+      "description": "設計の解説ページ、路線図、設計図、背景付きPDF、挿絵入りA4冊子を HTML で作る Skill 集"
+    }
+  ]
+}
