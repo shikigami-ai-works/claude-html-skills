@@ -56,6 +56,7 @@ def main():
         print(__doc__)
         sys.exit(2)
     src, html_path, out_dir = sys.argv[1:4]
+    out_dir = os.path.abspath(out_dir)  # Chrome は相対パスの --screenshot を書かずに終わる
     d = json.load(io.open(src, encoding="utf-8"))
     os.makedirs(out_dir, exist_ok=True)
     url = Path(html_path).resolve().as_uri()

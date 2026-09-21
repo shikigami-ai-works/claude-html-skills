@@ -1,6 +1,6 @@
 # html-skills の進み具合
 
-最終更新 2026-09-19
+最終更新 2026-09-21
 
 ## 済んだこと（2026-09-19）
 
@@ -19,10 +19,19 @@
 - `LICENSE`（MIT）、`.gitattributes`（改行を LF に固定）、`.claude-plugin/marketplace.json` を足した。`claude plugin validate` は plugin.json と marketplace.json とも警告なしで通過
 - 隔離した設定フォルダ（`CLAUDE_CONFIG_DIR`）で `marketplace add` から `install` まで通し、enabled になった。しきの本来の設定には何も残っていない
 
+## 見本の画像と公開の付属物（2026-09-21）
+
+- `docs/images/` に各 Skill の見本の画像7枚（README 用6枚、共有用の画像 1280×640 を1枚）。題材はすべて架空（図書館の貸出、出版社の制作、星空観察）
+- 路線図の画像は下端の「作り方」欄を切り落とした。書き出した場所のフルパス（ユーザー名を含む）が写るため
+- sekkeizu の `shots.py` が、撮影先を相対パスで渡すと0バイトの画像を書いて落ちる不具合を直した（絶対パスに直してから Chrome へ渡す）
+- a4-booklet の雛形のコメントに残っていた旧名 `render.ps1` を `render.py` に直した
+- `CHANGELOG.md`、`docs/github-settings.md`（About 欄の説明文、トピック、共有用の画像の入れ方）を足した。版の札 `v0.1.0` を手元で付けた
+
 ## 公開の手順（しきがやる）
 
 1. GitHub で空の公開リポジトリ `html-skills` を作る（README や LICENSE は付けない）
-2. `git remote add origin https://github.com/shikigami-ai-works/html-skills.git` と `git push -u origin main`
+2. `git remote add origin https://github.com/shikigami-ai-works/html-skills.git` と `git push -u origin main` と `git push origin v0.1.0`
+3. `docs/github-settings.md` のとおり、About 欄と共有用の画像を画面で入れる
 
 commit の作者は、この倉庫だけ `Shikigami_AI_ <285404213+shikigami-ai-works@users.noreply.github.com>`（GitHub の公開用アドレス）にしてある（2026-09-19、しきの指示）。全体の設定の Gmail は変えていない。
 

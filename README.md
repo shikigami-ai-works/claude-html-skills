@@ -15,6 +15,42 @@ HTML を正本にして、読むためのページや印刷物を作る Claude C
 
 explain-visually は明示して呼んだときだけ動く。他の4本は、依頼の言い方から Claude が選ぶ。
 
+## 作れる物の見本
+
+どの見本も架空の題材で、各 Skill の雛形から書き出した物である。
+
+### explain-visually
+
+実装計画を、要約、処理の流れ、表の関係図、識別子つきの設計判断に分けて1枚にする。
+
+![explain-visually の見本](docs/images/explain-visually.png)
+
+### rosenzu
+
+長い流れを路線、節目を駅として描く。幅 1280 と 375、明と暗の4通りで崩れないことを撮影して確かめる。
+
+![rosenzu の見本](docs/images/rosenzu.png)
+
+### sekkeizu
+
+同じ入力から、画面と業務フロー、概念図、ER図の3つを切り替えて見る。右の一覧で物を選ぶと、3つの図をまたいで光る。
+
+![sekkeizu の業務フロー](docs/images/sekkeizu-flow.png)
+
+![sekkeizu のER図で貸出を選んだところ](docs/images/sekkeizu-er.png)
+
+### bg-pdf
+
+背景の画像を9分割で敷き、画面でも印刷でも枠が歪まない1枚ものを作る。
+
+![bg-pdf の見本](docs/images/bg-pdf.png)
+
+### a4-booklet
+
+表紙、目次、本文の章を1ページずつ組む A4 の冊子。PDF とページごとの画像を出す。
+
+![a4-booklet の見本](docs/images/a4-booklet.jpg)
+
 ## 入れ方
 
 Claude Code で、このリポジトリをマーケットプレイス（プラグインの配布元）として登録してから入れる。
