@@ -31,6 +31,7 @@
 
 - https://github.com/shikigami-ai-works/claude-html-skills に main と札 v0.1.0 を push した。README の2行で GitHub から入れられることを、隔離した設定で確かめた
 - About 欄の説明文、トピック6個、共有用の画像を入れた。GitHub から読み直して確かめた
+- 見本の画像を2倍の細かさ（Chrome の `--force-device-scale-factor=2`）で撮り直し、縮めずに置いた。共有用の画像は 2560×1280 にして、見本を3枚に絞った
 
 ## 公開の手順（済み）
 
