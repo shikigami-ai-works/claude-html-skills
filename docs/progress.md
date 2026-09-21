@@ -27,7 +27,12 @@
 - a4-booklet の雛形のコメントに残っていた旧名 `render.ps1` を `render.py` に直した
 - `CHANGELOG.md`、`docs/github-settings.md`（About 欄の説明文、トピック、共有用の画像の入れ方）を足した。版の札 `v0.1.0` を手元で付けた
 
-## 公開の手順（しきがやる）
+## 公開した（2026-09-21）
+
+- https://github.com/shikigami-ai-works/claude-html-skills に main と札 v0.1.0 を push した。README の2行で GitHub から入れられることを、隔離した設定で確かめた
+- About 欄の説明文、トピック6個、共有用の画像を入れた。GitHub から読み直して確かめた
+
+## 公開の手順（済み）
 
 1. GitHub で空の公開リポジトリ `claude-html-skills` を作る（README や LICENSE は付けない）
 2. `git remote add origin https://github.com/shikigami-ai-works/claude-html-skills.git` と `git push -u origin main` と `git push origin v0.1.0`
