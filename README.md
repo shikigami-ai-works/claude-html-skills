@@ -56,14 +56,14 @@ explain-visually は明示して呼んだときだけ動く。他の4本は、�
 Claude Code で、このリポジトリをマーケットプレイス（プラグインの配布元）として登録してから入れる。
 
 ```bash
-claude plugin marketplace add shikigami-ai-works/html-skills
+claude plugin marketplace add shikigami-ai-works/claude-html-skills
 claude plugin install html-skills@html-skills
 ```
 
 入れずに1回だけ試すなら、複製したフォルダを起動時に渡す。
 
 ```bash
-claude --plugin-dir ./html-skills
+claude --plugin-dir ./claude-html-skills
 ```
 
 1本だけ使う場合は、`skills/<名前>/` のフォルダを `~/.claude/skills/` かプロジェクトの `.claude/skills/` に複製する。
