@@ -10,11 +10,16 @@ Description:
 Claude Code 用の Skill 集。設計の解説ページ、路線図、業務フローとER図の設計図、背景付きPDF、挿絵入りA4冊子を HTML で作り、ヘッドレス Chrome で描画を確かめてから渡す。
 ```
 
-Topics:
+Topics は、6個をまとめて貼ると1個の札になり、保存のときにエラーになる。日本語入力をオフにして、1個ずつ打って Enter を押す。
 
-```
-claude-code claude-skills html mermaid pdf japanese
-```
+- `claude-code`
+- `claude-skills`
+- `html`
+- `mermaid`
+- `pdf`
+- `japanese`
+
+使える文字は半角の小文字、数字、ハイフンだけ（1個50文字まで）。
 
 ## 共有したときの画像
 
